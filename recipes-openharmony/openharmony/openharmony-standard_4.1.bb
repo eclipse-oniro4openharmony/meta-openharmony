@@ -60,7 +60,7 @@ do_install () {
     # initialize root file system 
     cd ${D}
     mkdir  chip_prod  config  data  dev  eng_chipset  eng_system  \
-        mnt  module_update  proc  storage  sys  sys_prod  tmp  updater 
+        mnt  module_update   storage sys_prod  tmp  updater 
     ln -sf /vendor ${D}/chipset
     ln -sf /system/bin/init ${D}/init
 
@@ -90,7 +90,7 @@ FILES:${PN} += "\
     /vendor/* \
     /lib/* \
     chip_prod  chipset  config  data  dev  eng_chipset  eng_system  \
-    init  mnt  module_update  proc  storage  sys  sys_prod  tmp  updater \
+    init  mnt  module_update storage  sys_prod  tmp  updater \
 "
 
 
