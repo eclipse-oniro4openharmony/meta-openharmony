@@ -1,0 +1,37 @@
+From d8ce64f23f275424046d3cac762c0d75a4e20070 Mon Sep 17 00:00:00 2001
+From: Francesco Pham <francesco.pham@huawei.com>
+Date: Fri, 24 Jan 2025 16:10:16 +0100
+Subject: [PATCH] fix(access_tokenid): resolve strict-prototypes warning in
+ function definition
+
+The function `check_permission_for_set_token_permission` was defined
+without
+specifying a parameter list, leading to a `-Werror=strict-prototypes`
+error
+during compilation. This occurred because empty parentheses `()` in C do
+not
+explicitly indicate that the function takes no arguments.
+
+Updated the function definition to explicitly use `void` in the
+parameter list,
+ensuring compliance with strict prototype rules and resolving the
+compiler error.
+
+Signed-off-by: Francesco Pham <francesco.pham@huawei.com>
+---
+ drivers/accesstokenid/access_tokenid.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/accesstokenid/access_tokenid.c b/drivers/accesstokenid/access_tokenid.c
+index a9340d471f6c..33a61ef163b3 100644
+--- a/drivers/accesstokenid/access_tokenid.c
++++ b/drivers/accesstokenid/access_tokenid.c
+@@ -119,7 +119,7 @@ int access_tokenid_set_ftokenid(struct file *file, void __user *uarg)
+ 	return 0;
+ }
+ 
+-static bool check_permission_for_set_token_permission()
++static bool check_permission_for_set_token_permission(void)
+ {
+ 	kuid_t uid = current_uid();
+ 	return uid_eq(uid, ACCESS_TOKEN_UID);
