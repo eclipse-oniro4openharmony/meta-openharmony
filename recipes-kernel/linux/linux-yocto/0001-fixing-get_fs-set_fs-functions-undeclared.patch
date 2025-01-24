@@ -1,0 +1,175 @@
+From b94ea229a84b28138dcab8750ff3e79dedec1704 Mon Sep 17 00:00:00 2001
+From: Francesco Pham <francesco.pham@huawei.com>
+Date: Fri, 24 Jan 2025 17:43:01 +0100
+Subject: [PATCH] fixing get_fs, set_fs functions undeclared
+
+fixing `error: implicit declaration of function 'get_fs'; did you mean 'sget_fc'?`
+by backporting from openharmony kernel 6.6
+
+Signed-off-by: Francesco Pham <francesco.pham@huawei.com>
+---
+ drivers/staging/blackbox/blackbox_common.c    | 31 +++++++++++++++++++
+ .../staging/hisysevent/hiview_hisysevent.c    |  7 +++++
+ 2 files changed, 38 insertions(+)
+
+diff --git a/drivers/staging/blackbox/blackbox_common.c b/drivers/staging/blackbox/blackbox_common.c
+index 44bc2aa185f1..5e4d16ce1cb2 100644
+--- a/drivers/staging/blackbox/blackbox_common.c
++++ b/drivers/staging/blackbox/blackbox_common.c
+@@ -13,6 +13,7 @@
+ #include <linux/fs.h>
+ #include <linux/namei.h>
+ #include <linux/blackbox_common.h>
++#include <linux/version.h>
+ 
+ void sys_reset(void)
+ {
+@@ -23,7 +24,9 @@ void sys_reset(void)
+ 
+ void change_own(char *path, int uid, int gid)
+ {
++#if LINUX_VERSION_CODE <= KERNEL_VERSION(5, 10, 197)
+ 	mm_segment_t old_fs;
++#endif
+ 	int ret = -1;
+ 
+ 	if (unlikely(!path || uid == -1 || gid == -1)) {
+@@ -31,13 +34,17 @@ void change_own(char *path, int uid, int gid)
+ 		return;
+ 	}
+ 
++#if LINUX_VERSION_CODE <= KERNEL_VERSION(5, 10, 197)
+ 	old_fs = get_fs();
+ 	set_fs(KERNEL_DS);
++#endif
+ 	ret = ksys_chown(path, uid, gid);
+ 	if (ret != 0)
+ 		bbox_print_err("ksys_chown [%s] failed, ret: %d\n", path, ret);
+ 
++#if LINUX_VERSION_CODE <= KERNEL_VERSION(5, 10, 197)
+ 	set_fs(old_fs);
++#endif
+ }
+ 
+ int full_write_file(const char *pfile_path, char *buf,
+@@ -45,7 +52,9 @@ int full_write_file(const char *pfile_path, char *buf,
+ {
+ 	struct file *filp = NULL;
+ 	char *pathname = NULL;
++#if LINUX_VERSION_CODE <= KERNEL_VERSION(5, 10, 197)
+ 	mm_segment_t old_fs;
++#endif
+ 	loff_t pos = 0;
+ 	int ret = -1;
+ 
+@@ -61,12 +70,16 @@ int full_write_file(const char *pfile_path, char *buf,
+ 		return -EBADF;
+ 	}
+ 
++#if LINUX_VERSION_CODE <= KERNEL_VERSION(5, 10, 197)
+ 	old_fs = get_fs();
+ 	set_fs(KERNEL_DS);
++#endif
+ 
+ 	ret = vfs_write(filp, buf, buf_size, &pos);
+ 
++#if LINUX_VERSION_CODE <= KERNEL_VERSION(5, 10, 197)
+ 	set_fs(old_fs);
++#endif
+ 
+ 	file_close(filp);
+ 
+@@ -88,7 +101,11 @@ int file_exists(const char *name)
+ 	if (ret)
+ 		return ret;
+ 
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
++	ret = inode_permission(&nop_mnt_idmap, d_inode(path.dentry), MAY_ACCESS);
++#else
+ 	ret = inode_permission(d_inode(path.dentry), MAY_ACCESS);
++#endif
+ 	path_put(&path);
+ 	return ret;
+ }
+@@ -110,7 +127,11 @@ static int create_new_dir(char *name)
+ 		if (IS_ERR(dentry))
+ 			return PTR_ERR(dentry);
+ 
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
++		ret = vfs_mkdir(&nop_mnt_idmap, d_inode(path.dentry), dentry, BBOX_DIR_LIMIT);
++#else
+ 		ret = vfs_mkdir(d_inode(path.dentry), dentry, BBOX_DIR_LIMIT);
++#endif
+ 		if (ret && ret != -EEXIST)
+ 			bbox_print_err("Create dir [%s] failed! ret: %d\n", name, ret);
+ 
+@@ -207,13 +228,19 @@ static inline void unlock_dir(struct dentry *dentry)
+ struct file *file_open(const char *filename, int open_mode, int mode)
+ {
+ 	struct file *filp = NULL;
++#if LINUX_VERSION_CODE <= KERNEL_VERSION(5, 10, 197)
+ 	mm_segment_t old_fs;
++#endif
+ 
++#if LINUX_VERSION_CODE <= KERNEL_VERSION(5, 10, 197)
+ 	old_fs = get_fs();
+ 	set_fs(KERNEL_DS);
++#endif
+ 
+ 	filp = filp_open(filename, open_mode, mode);
++#if LINUX_VERSION_CODE <= KERNEL_VERSION(5, 10, 197)
+ 	set_fs(old_fs);
++#endif
+ 
+ 	return filp;
+ }
+@@ -240,7 +267,11 @@ int file_delete(struct file *filp)
+ 
+ 	if (dentry->d_parent == parent) {
+ 		dget(dentry);
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
++		ret = vfs_unlink(&nop_mnt_idmap, d_inode(parent), dentry, NULL);
++#else
+ 		ret = vfs_unlink(d_inode(parent), dentry, NULL);
++#endif
+ 		dput(dentry);
+ 	}
+ 
+diff --git a/drivers/staging/hisysevent/hiview_hisysevent.c b/drivers/staging/hisysevent/hiview_hisysevent.c
+index 80d798141777..8503dd7ae644 100644
+--- a/drivers/staging/hisysevent/hiview_hisysevent.c
++++ b/drivers/staging/hisysevent/hiview_hisysevent.c
+@@ -19,6 +19,7 @@
+ #include <linux/uio.h>
+ #include <linux/vmalloc.h>
+ #include <asm/current.h>
++#include <linux/version.h>
+ 
+ #include "hisysevent_builder.h"
+ #include "hisysevent_raw_data.h"
+@@ -96,7 +97,9 @@ int hisysevent_write(struct hiview_hisysevent *event)
+ 	struct file *filp;
+ 	unsigned long vcount;
+ 	struct iovec vec[3];
++#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 10, 192)
+ 	mm_segment_t oldfs;
++#endif
+ 	struct iov_iter iter;
+ 
+ 	if (!event) {
+@@ -141,11 +144,15 @@ int hisysevent_write(struct hiview_hisysevent *event)
+ 	vec[vcount].iov_base = raw_data->data;
+ 	vec[vcount++].iov_len = raw_data->len + 1;
+ 
++#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 10, 192)
+ 	oldfs = get_fs();
+ 	set_fs(KERNEL_DS);
++#endif
+ 	iov_iter_init(&iter, WRITE, vec, vcount, iov_length(vec, vcount));
+ 	ret = vfs_iter_write(filp, &iter, &filp->f_pos, 0);
++#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 10, 192)
+ 	set_fs(oldfs);
++#endif
+ 
+ 	if (ret < 0)
+ 		pr_err("failed to write hisysevent, ret=%d", ret);
