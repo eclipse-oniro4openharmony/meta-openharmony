@@ -23,3 +23,6 @@ use_ohos_musl() {
 }
 
 ROOTFS_POSTPROCESS_COMMAND += "use_ohos_musl; "
+
+# skip sorting of the user and group entries in /etc by ID
+SORT_PASSWD_POSTPROCESS_COMMAND = ""
