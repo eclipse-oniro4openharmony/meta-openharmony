@@ -4,6 +4,7 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/openharmony:"
 SRC_URI += "file://0001-OpenHarmony-4.1-Release-adaptation.patch"
 SRC_URI += "file://0001-fix-access_tokenid-resolve-strict-prototypes-warning.patch"
 SRC_URI += "file://0001-fixing-get_fs-set_fs-functions-undeclared.patch"
+SRC_URI += "file://kbuild_cflags.patch"
 
 SRC_URI += " file://openharmony.cfg"
 
@@ -44,5 +45,27 @@ do_configure:prepend() {
 }
 
 do_compile:prepend() { 
+    export PRODUCT_PATH=vendor/oniro/x23
+
+    # Find the path of the g++ compiler
+    GPP_PATH=$(which g++)
+    if [ -z "$GPP_PATH" ]; then
+        bberr "g++ not found."
+        exit 1
+    fi
+
+    # Get the directory where g++ is located
+    GPP_DIR=$(dirname "$GPP_PATH")
+
+    # Check if c++ exists in the same directory
+    if [ ! -f "$GPP_DIR/c++" ]; then
+        # If c++ does not exist, create a symlink to g++
+        ln -s "$GPP_PATH" "$GPP_DIR/c++"
+        bbnote "Symbolic link for c++ created."
+    fi
+
+}
+
+do_compile_kernelmodules:prepend() {
     export PRODUCT_PATH=vendor/oniro/x23
 }
