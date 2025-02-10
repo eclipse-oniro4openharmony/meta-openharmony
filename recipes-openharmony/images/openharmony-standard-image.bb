@@ -6,23 +6,21 @@ SUMMARY = "A console-only image with OpenHarmony first party components"
 
 LICENSE = "Apache-2.0"
 
+IMAGE_FEATURES += "splash package-management x11-base ssh-server-dropbear"
+
 inherit core-image
 
 # install OpenHarmony components and ptests
 IMAGE_INSTALL += "openharmony-standard"
 
 # Let's be friendly enough to provide a fully working interactive shell
-IMAGE_INSTALL += "bash"
+IMAGE_INSTALL += "cgroup-lite lxc libdrm-tests"
 
-use_ohos_musl() {
-    rm ${IMAGE_ROOTFS}/lib/ld-musl-aarch64.so.1
-    rm ${IMAGE_ROOTFS}/etc/ld-musl-aarch64.path
+IMAGE_INSTALL += "packagegroup-core-boot ${CORE_IMAGE_EXTRA_INSTALL}"
 
-    mv ${IMAGE_ROOTFS}/lib/ohos-ld-musl-aarch64.so.1 ${IMAGE_ROOTFS}/lib/ld-musl-aarch64.so.1 
-    mv ${IMAGE_ROOTFS}/etc/ohos-ld-musl-aarch64.path ${IMAGE_ROOTFS}/etc/ld-musl-aarch64.path 
-}
+IMAGE_ROOTFS_SIZE ?= "8192"
+IMAGE_ROOTFS_EXTRA_SPACE:append = " + 8192"
 
-ROOTFS_POSTPROCESS_COMMAND += "use_ohos_musl; "
+QB_MEM = "-m 1024"
 
-# skip sorting of the user and group entries in /etc by ID
-SORT_PASSWD_POSTPROCESS_COMMAND = ""
+QB_KERNEL_CMDLINE_APPEND += "bootopt=64S3,32N2,64N2 systempart=/dev/mapper/system hardware=x23 ohos.boot.sn=0a20230726rpi fbcon=disable"
