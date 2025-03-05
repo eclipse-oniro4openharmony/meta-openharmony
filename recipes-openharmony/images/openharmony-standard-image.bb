@@ -10,10 +10,10 @@ IMAGE_FEATURES += "ssh-server-dropbear"
 
 inherit core-image
 
-# install OpenHarmony components and ptests
+# install OpenHarmony components
 IMAGE_INSTALL += "openharmony-standard"
 
-# Let's be friendly enough to provide a fully working interactive shell
+# install container related components
 IMAGE_INSTALL += "cgroup-lite lxc"
 
 IMAGE_INSTALL += "packagegroup-core-boot ${CORE_IMAGE_EXTRA_INSTALL}"
