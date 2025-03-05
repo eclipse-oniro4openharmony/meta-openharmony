@@ -1,0 +1,12 @@
+[Unit]
+Description=Start OpenHarmony LXC container
+After=network.target systemd-user-sessions.service
+Requires=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/lxc-start -n openharmony -F
+ExecStop=/usr/bin/lxc-stop -W -n openharmony -k
+
+[Install]
+WantedBy=multi-user.target
