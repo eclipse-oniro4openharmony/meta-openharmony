@@ -1,0 +1,44 @@
+From 08f38abacb3f646c44992699a257bce73009e5b2 Mon Sep 17 00:00:00 2001
+From: Francesco Pham <francesco.pham@huawei.com>
+Date: Thu, 13 Feb 2025 00:25:33 +0100
+Subject: [PATCH] hdf_sbuf.c: remove float and double to comply with
+ general-regs-only flag
+
+Signed-off-by: Francesco Pham <francesco.pham@huawei.com>
+---
+ framework/utils/src/hdf_sbuf.c | 14 +-------------
+ 1 file changed, 1 insertion(+), 13 deletions(-)
+
+diff --git a/framework/utils/src/hdf_sbuf.c b/framework/utils/src/hdf_sbuf.c
+index a8bec65f..e7b99777 100644
+--- a/framework/utils/src/hdf_sbuf.c
++++ b/framework/utils/src/hdf_sbuf.c
+@@ -268,18 +268,6 @@ struct HdfRemoteService *HdfSbufReadRemoteService(struct HdfSBuf *sbuf)
+     return sbuf->impl->readRemoteService(sbuf->impl);
+ }
+ 
+-bool HdfSbufWriteFloat(struct HdfSBuf *sbuf, float data)
+-{
+-    HDF_SBUF_IMPL_CHECK_RETURN(sbuf, writeFloat, false);
+-    return sbuf->impl->writeFloat(sbuf->impl, data);
+-}
+-
+-bool HdfSbufWriteDouble(struct HdfSBuf *sbuf, double data)
+-{
+-    HDF_SBUF_IMPL_CHECK_RETURN(sbuf, writeDouble, false);
+-    return sbuf->impl->writeDouble(sbuf->impl, data);
+-}
+-
+ bool HdfSbufWriteFileDescriptor(struct HdfSBuf *sbuf, int fd)
+ {
+     HDF_SBUF_IMPL_CHECK_RETURN(sbuf, writeFileDescriptor, false);
+@@ -492,4 +480,4 @@ struct HdfSBufImpl *HdfSbufGetImpl(struct HdfSBuf *sbuf)
+     }
+ 
+     return NULL;
+-}
+\ No newline at end of file
++}
+-- 
+2.43.0
+
