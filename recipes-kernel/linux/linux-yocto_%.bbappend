@@ -10,9 +10,6 @@ SRC_URI += " file://openharmony.cfg"
 
 ORIGIN_URL = "git://github.com/eclipse-oniro-mirrors"
 
-SRC_URI += "${ORIGIN_URL}/kernel_linux_common_modules.git;protocol=https;branch=OpenHarmony-4.1-Release;type=kmeta;name=kernel_linux_common_modules;destsuffix=kernel/linux/common_modules"
-SRCREV_kernel_linux_common_modules = "84aec14ca5fa4afa90f6023118db1e6db9c35797"
-
 SRC_URI += "${ORIGIN_URL}/third_party_bounds_checking_function.git;protocol=https;branch=OpenHarmony-4.1-Release;name=third_party_bounds_checking_function;destsuffix=third_party/bounds_checking_function"
 SRCREV_third_party_bounds_checking_function = "dd8125bec1f8d9f28b7a9c99931d4b0580b7f78d"
 
@@ -31,17 +28,6 @@ SRC_URI += "file://hdf_patch.sh"
 do_patch:append(){
     KERNEL_BUILD_ROOT=${S}
     bash ${WORKDIR}/hdf_patch.sh ${WORKDIR} ${KERNEL_BUILD_ROOT}
-}
-
-do_configure:prepend() {
-    KERNEL_BUILD_ROOT=${S}
-    ROOT_DIR=${WORKDIR}
-    
-    bash ${ROOT_DIR}/kernel/linux/common_modules/newip/apply_newip.sh ${ROOT_DIR} ${KERNEL_BUILD_ROOT} ${MACHINE} ${LINUX_VERSION}
-    bash ${ROOT_DIR}/kernel/linux/common_modules/qos_auth/apply_qos_auth.sh ${ROOT_DIR} ${KERNEL_BUILD_ROOT} ${MACHINE} ${LINUX_VERSION}
-    if [ ! -d "$KERNEL_BUILD_ROOT/security/xpm" ]; then
-        bash ${ROOT_DIR}/kernel/linux/common_modules/xpm/apply_xpm.sh ${ROOT_DIR} ${KERNEL_BUILD_ROOT} ${MACHINE} ${LINUX_VERSION}
-    fi
 }
 
 do_compile:prepend() { 
