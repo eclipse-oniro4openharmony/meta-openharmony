@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-SUMMARY = "A console-only image with OpenHarmony first party components"
+SUMMARY = "OpenHarmony standard image"
 
 LICENSE = "Apache-2.0"
 
