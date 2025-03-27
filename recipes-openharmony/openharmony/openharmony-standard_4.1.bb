@@ -4,6 +4,7 @@
 
 SUMMARY = "OpenHarmony 4.1"
 
+# For the relevant license information, please refer to the notice files in the OpenHarmony source code.
 LICENSE = "CLOSED"
 LIC_FILES_CHKSUM = ""
 
